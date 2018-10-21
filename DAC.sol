@@ -1,30 +1,32 @@
 /*
-This file is part of the DAO.
+This file is part of TESLA-DAC® 
 
-The DAO is free software: you can redistribute it and/or modify
+
+
+TESLA-DAC® is free software: you can redistribute it and/or modify
 it under the terms of the GNU lesser General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-The DAO is distributed in the hope that it will be useful,
+TESLA-DAC® is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU lesser General Public License for more details.
 
 You should have received a copy of the GNU lesser General Public License
-along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
+along with TESLA-DAC®.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
 /*
-Standard smart contract for a Decentralized Autonomous Organization (DAO)
+Standard smart contract for a Decentralized Autonomous Corporation (DAC)
 to automate organizational governance and decision-making.
 */
 
 import "./TokenCreation.sol";
 import "./ManagedAccount.sol";
 
-contract DAOInterface {
+contract DACInterface {
 
     // The amount of days for which people who try to participate in the
     // creation by calling the fallback function will still get their ether back
@@ -33,7 +35,7 @@ contract DAOInterface {
     uint constant minProposalDebatePeriod = 2 weeks;
     // The minimum debate period that a split proposal can have
     uint constant minSplitDebatePeriod = 1 weeks;
-    // Period of days inside which it's possible to execute a DAO split
+    // Period of days inside which it's possible to execute a DAC split
     uint constant splitExecutionPeriod = 27 days;
     // Period of time after which the minimum Quorum is halved
     uint constant quorumHalvingPeriod = 25 weeks;
@@ -41,10 +43,10 @@ contract DAOInterface {
     // (used in the case `executeProposal` fails because it throws)
     uint constant executeProposalPeriod = 10 days;
     // Denotes the maximum proposal deposit that can be given. It is given as
-    // a fraction of total Ether spent plus balance of the DAO
+    // a fraction of total Ether spent plus balance of TESLA-DAC®
     uint constant maxDepositDivisor = 100;
 
-    // Proposals to spend the DAO's ether or to choose a new Curator
+    // Proposals to spend TESLA-DAC®'s ether or to choose a new Curator
     Proposal[] public proposals;
     // The quorum needed for each proposal is partially calculated by
     // totalSupply / minQuorumDivisor
@@ -54,31 +56,31 @@ contract DAOInterface {
 
     // Address of the curator
     address public curator;
-    // The whitelist: List of addresses the DAO is allowed to send ether to
+    // The whitelist: List of addresses TESLA-DAC® is allowed to send ether to
     mapping (address => bool) public allowedRecipients;
 
     // Tracks the addresses that own Reward Tokens. Those addresses can only be
-    // DAOs that have split from the original DAO. Conceptually, Reward Tokens
-    // represent the proportion of the rewards that the DAO has the right to
-    // receive. These Reward Tokens are generated when the DAO spends ether.
+    // DACs that have split from the original TESLA-DAC®. Conceptually, Reward Tokens
+    // represent the proportion of the rewards that TESLA-DAC® has the right to
+    // receive. These Reward Tokens are generated when TESLA-DAC® spends ether.
     mapping (address => uint) public rewardToken;
     // Total supply of rewardToken
     uint public totalRewardToken;
 
     // The account used to manage the rewards which are to be distributed to the
-    // DAO Token Holders of this DAO
+    // DAC Token Holders of TESLA-DAC®
     ManagedAccount public rewardAccount;
 
     // The account used to manage the rewards which are to be distributed to
-    // any DAO that holds Reward Tokens
-    ManagedAccount public DAOrewardAccount;
+    // any DAC that holds Reward Tokens
+    ManagedAccount public DACrewardAccount;
 
-    // Amount of rewards (in wei) already paid out to a certain DAO
-    mapping (address => uint) public DAOpaidOut;
+    // Amount of rewards (in wei) already paid out to a certain DAC
+    mapping (address => uint) public DACpaidOut;
 
     // Amount of rewards (in wei) already paid out to a certain address
     mapping (address => uint) public paidOut;
-    // Map of addresses blocked during a vote (not allowed to transfer DAO
+    // Map of addresses blocked during a vote (not allowed to transfer DAC
     // tokens). The address points to the proposal ID.
     mapping (address => uint) public blocked;
 
@@ -89,17 +91,17 @@ contract DAOInterface {
     // the accumulated sum of all current proposal deposits
     uint sumOfProposalDeposits;
 
-    // Contract that is able to create a new DAO (with the same code as
+    // Contract that is able to create a new DAC (with the same code as
     // this one), used for splits
-    DAO_Creator public daoCreator;
+    DAC_Creator public dacCreator;
 
     // A proposal with `newCurator == false` represents a transaction
-    // to be issued by this DAO
-    // A proposal with `newCurator == true` represents a DAO split
+    // to be issued by this DAC
+    // A proposal with `newCurator == true` represents a DAC split
     struct Proposal {
         // The address where the `amount` will go to if the proposal is accepted
         // or if `newCurator` is true, the proposed Curator of
-        // the new DAO).
+        // the new DAC).
         address recipient;
         // The amount to transfer to `recipient` if the proposal is accepted.
         uint amount;
@@ -119,7 +121,7 @@ contract DAOInterface {
         uint proposalDeposit;
         // True if this proposal is to assign a new Curator
         bool newCurator;
-        // Data needed for splitting the DAO
+        // Data needed for splitting TESLA-DAC®
         SplitData[] splitData;
         // Number of Tokens in favor of the proposal
         uint yea;
@@ -135,38 +137,38 @@ contract DAOInterface {
 
     // Used only in the case of a newCurator proposal.
     struct SplitData {
-        // The balance of the current DAO minus the deposit at the time of split
+        // The balance of the current DAC minus the deposit at the time of split
         uint splitBalance;
-        // The total amount of DAO Tokens in existence at the time of split.
+        // The total amount of DAC Tokens in existence at the time of split.
         uint totalSupply;
-        // Amount of Reward Tokens owned by the DAO at the time of split.
+        // Amount of Reward Tokens owned by TESLA-DAC® at the time of split.
         uint rewardToken;
-        // The new DAO contract created at the time of split.
-        DAO newDAO;
+        // The new DAC contract created at the time of split.
+        DAC newDAC;
     }
 
-    // Used to restrict access to certain functions to only DAO Token Holders
+    // Used to restrict access to certain functions to only DAC Token Holders
     modifier onlyTokenholders {}
 
     /// @dev Constructor setting the Curator and the address
-    /// for the contract able to create another DAO as well as the parameters
-    /// for the DAO Token Creation
+    /// for the contract able to create another DAC as well as the parameters
+    /// for TESLA-DAC® Token Creation
     /// @param _curator The Curator
-    /// @param _daoCreator The contract able to (re)create this DAO
+    /// @param _dacCreator The contract able to (re)create this DAC
     /// @param _proposalDeposit The deposit to be paid for a regular proposal
     /// @param _minTokensToCreate Minimum required wei-equivalent tokens
-    ///        to be created for a successful DAO Token Creation
-    /// @param _closingTime Date (in Unix time) of the end of the DAO Token Creation
-    /// @param _privateCreation If zero the DAO Token Creation is open to public, a
-    /// non-zero address means that the DAO Token Creation is only for the address
-    /// @param _tokenName The name that the DAO's token will have
-    /// @param _tokenSymbol The ticker symbol that this DAO token should have
+    ///        to be created for a successful DAC Token Creation
+    /// @param _closingTime Date (in Unix time) of the end of TESLA-DAC® Token Creation
+    /// @param _privateCreation If zero TESLA-DAC® Token Creation is open to public, a
+    /// non-zero address means that the DAC Token Creation is only for the address
+    /// @param _tokenName The name that the DAC's token will have
+    /// @param _tokenSymbol The ticker symbol that this DAC token should have
     /// @param _decimalPlaces The number of decimal places that the token is
     ///        counted from.
     // This is the constructor: it can not be overloaded so it is commented out
-    //  function DAO(
+    //  function DAC(
         //  address _curator,
-        //  DAO_Creator _daoCreator,
+        //  DAC_Creator _dacCreator,
         //  uint _proposalDeposit,
         //  uint _minTokensToCreate,
         //  uint _closingTime,
@@ -182,15 +184,15 @@ contract DAOInterface {
 
 
     /// @dev This function is used to send ether back
-    /// to the DAO, it can also be used to receive payments that should not be
+    /// to TESLA-DAC®, it can also be used to receive payments that should not be
     /// counted as rewards (donations, grants, etc.)
-    /// @return Whether the DAO received the ether successfully
+    /// @return Whether TESLA-DAC® received the ether successfully
     function receiveEther() returns(bool);
 
     /// @notice `msg.sender` creates a proposal to send `_amount` Wei to
     /// `_recipient` with the transaction data `_transactionData`. If
     /// `_newCurator` is true, then this is a proposal that splits the
-    /// DAO and sets `_recipient` as the new DAO's Curator.
+    ///  and sets `_recipient` as the new DAC's Curator.
     /// @param _recipient Address of the recipient of the proposed transaction
     /// @param _amount Amount of wei to be sent with the proposed transaction
     /// @param _description String describing the proposal
@@ -240,31 +242,31 @@ contract DAOInterface {
         bytes _transactionData
     ) returns (bool _success);
 
-    /// @notice ATTENTION! I confirm to move my remaining ether to a new DAO
+    /// @notice ATTENTION! I confirm to move my remaining ether to a new DAC
     /// with `_newCurator` as the new Curator, as has been
     /// proposed in proposal `_proposalID`. This will burn my tokens. This can
-    /// not be undone and will split the DAO into two DAO's, with two
+    /// not be undone and will split TESLA-DAC® into two DAC's, with two
     /// different underlying tokens.
     /// @param _proposalID The proposal ID
-    /// @param _newCurator The new Curator of the new DAO
+    /// @param _newCurator The new Curator of the new DAC
     /// @dev This function, when called for the first time for this proposal,
-    /// will create a new DAO and send the sender's portion of the remaining
-    /// ether and Reward Tokens to the new DAO. It will also burn the DAO Tokens
+    /// will create a new DAC and send the sender's portion of the remaining
+    /// ether and Reward Tokens to the new DAC. It will also burn TESLA-DAC® Tokens
     /// of the sender.
-    function splitDAO(
+    function splitDAC(
         uint _proposalID,
         address _newCurator
     ) returns (bool _success);
 
-    /// @dev can only be called by the DAO itself through a proposal
-    /// updates the contract of the DAO by sending all ether and rewardTokens
-    /// to the new DAO. The new DAO needs to be approved by the Curator
+    /// @dev can only be called by TESLA-DAC® itself through a proposal
+    /// updates the contract of TESLA-DAC® by sending all ether and rewardTokens
+    /// to the new DAC. The new DAC needs to be approved by the Curator
     /// @param _newContract the address of the new contract
     function newContract(address _newContract);
 
 
     /// @notice Add a new possible recipient `_recipient` to the whitelist so
-    /// that the DAO can send transactions to them (using proposals)
+    /// that TESLA-DAC® can send transactions to them (using proposals)
     /// @param _recipient New recipient address
     /// @dev Can only be called by the current Curator
     /// @return Whether successful or not
@@ -273,15 +275,15 @@ contract DAOInterface {
 
     /// @notice Change the minimum deposit required to submit a proposal
     /// @param _proposalDeposit The new proposal deposit
-    /// @dev Can only be called by this DAO (through proposals with the
-    /// recipient being this DAO itself)
+    /// @dev Can only be called by this DAC (through proposals with the
+    /// recipient being this DAC itself)
     function changeProposalDeposit(uint _proposalDeposit) external;
 
-    /// @notice Move rewards from the DAORewards managed account
+    /// @notice Move rewards from the DACRewards managed account
     /// @param _toMembers If true rewards are moved to the actual reward account
-    ///                   for the DAO. If not then it's moved to the DAO itself
+    ///                   for TESLA-DAC®. If not then it's moved to the DAC itself
     /// @return Whether the call was successful
-    function retrieveDAOReward(bool _toMembers) external returns (bool _success);
+    function retrieveDACReward(bool _toMembers) external returns (bool _success);
 
     /// @notice Get my portion of the reward that was sent to `rewardAccount`
     /// @return Whether the call was successful
@@ -320,8 +322,8 @@ contract DAOInterface {
     function numberOfProposals() constant returns (uint _numberOfProposals);
 
     /// @param _proposalID Id of the new curator proposal
-    /// @return Address of the new DAO
-    function getNewDAOAddress(uint _proposalID) constant returns (address _newDAO);
+    /// @return Address of the new DAC
+    function getNewDACAddress(uint _proposalID) constant returns (address _newDAC);
 
     /// @param _account The address of the account which is checked.
     /// @return Whether the account is blocked (not allowed to transfer tokens) or not.
@@ -345,8 +347,8 @@ contract DAOInterface {
     event AllowedRecipientChanged(address indexed _recipient, bool _allowed);
 }
 
-// The DAO contract itself
-contract DAO is DAOInterface, Token, TokenCreation {
+// TESLA-DAC® contract itself
+contract DAC is DACInterface, Token, TokenCreation {
 
     // Modifier that allows only shareholders to vote and create new proposals
     modifier onlyTokenholders {
@@ -354,9 +356,9 @@ contract DAO is DAOInterface, Token, TokenCreation {
             _
     }
 
-    function DAO(
+    function DAC(
         address _curator,
-        DAO_Creator _daoCreator,
+        DAC_Creator _dacCreator,
         uint _proposalDeposit,
         uint _minTokensToCreate,
         uint _closingTime,
@@ -373,13 +375,13 @@ contract DAO is DAOInterface, Token, TokenCreation {
         _decimalPlaces) {
 
         curator = _curator;
-        daoCreator = _daoCreator;
+        dacCreator = _dacCreator;
         proposalDeposit = _proposalDeposit;
         rewardAccount = new ManagedAccount(address(this), false);
-        DAOrewardAccount = new ManagedAccount(address(this), false);
+        DACrewardAccount = new ManagedAccount(address(this), false);
         if (address(rewardAccount) == 0)
             throw;
-        if (address(DAOrewardAccount) == 0)
+        if (address(DACrewardAccount) == 0)
             throw;
         lastTimeMinQuorumMet = now;
         minQuorumDivisor = 5; // sets the minimal quorum to 20%
@@ -581,7 +583,7 @@ contract DAO is DAOInterface, Token, TokenCreation {
             // we are setting this here before the CALL() value transfer to
             // assure that in the case of a malicious recipient contract trying
             // to call executeProposal() recursively money can't be transferred
-            // multiple times out of the DAO
+            // multiple times out of TESLA-DAC®
             p.proposalPassed = true;
 
             if (!p.recipient.call.value(p.amount)(_transactionData))
@@ -589,10 +591,10 @@ contract DAO is DAOInterface, Token, TokenCreation {
 
             _success = true;
 
-            // only create reward tokens when ether is not sent to the DAO itself and
+            // only create reward tokens when ether is not sent to TESLA-DAC® itself and
             // related addresses. Proxy addresses should be forbidden by the curator.
             if (p.recipient != address(this) && p.recipient != address(rewardAccount)
-                && p.recipient != address(DAOrewardAccount)
+                && p.recipient != address(DACrewardAccount)
                 && p.recipient != address(extraBalance)
                 && p.recipient != address(curator)) {
 
@@ -615,7 +617,7 @@ contract DAO is DAOInterface, Token, TokenCreation {
         p.open = false;
     }
 
-    function splitDAO(
+    function splitDAC(
         uint _proposalID,
         address _newCurator
     ) noEther onlyTokenholders returns (bool _success) {
@@ -639,12 +641,12 @@ contract DAO is DAOInterface, Token, TokenCreation {
             throw;
         }
 
-        // If the new DAO doesn't exist yet, create the new DAO and store the
+        // If the new DAC doesn't exist yet, create the new DAC and store the
         // current split data
-        if (address(p.splitData[0].newDAO) == 0) {
-            p.splitData[0].newDAO = createNewDAO(_newCurator);
+        if (address(p.splitData[0].newDAC) == 0) {
+            p.splitData[0].newDAC = createNewDAC(_newCurator);
             // Call depth limit reached, etc.
-            if (address(p.splitData[0].newDAO) == 0)
+            if (address(p.splitData[0].newDAC) == 0)
                 throw;
             // should never happen
             if (this.balance < sumOfProposalDeposits)
@@ -659,29 +661,29 @@ contract DAO is DAOInterface, Token, TokenCreation {
         uint fundsToBeMoved =
             (balances[msg.sender] * p.splitData[0].splitBalance) /
             p.splitData[0].totalSupply;
-        if (p.splitData[0].newDAO.createTokenProxy.value(fundsToBeMoved)(msg.sender) == false)
+        if (p.splitData[0].newDAC.createTokenProxy.value(fundsToBeMoved)(msg.sender) == false)
             throw;
 
 
-        // Assign reward rights to new DAO
+        // Assign reward rights to new DAC
         uint rewardTokenToBeMoved =
             (balances[msg.sender] * p.splitData[0].rewardToken) /
             p.splitData[0].totalSupply;
 
-        uint paidOutToBeMoved = DAOpaidOut[address(this)] * rewardTokenToBeMoved /
+        uint paidOutToBeMoved = DACpaidOut[address(this)] * rewardTokenToBeMoved /
             rewardToken[address(this)];
 
-        rewardToken[address(p.splitData[0].newDAO)] += rewardTokenToBeMoved;
+        rewardToken[address(p.splitData[0].newDAC)] += rewardTokenToBeMoved;
         if (rewardToken[address(this)] < rewardTokenToBeMoved)
             throw;
         rewardToken[address(this)] -= rewardTokenToBeMoved;
 
-        DAOpaidOut[address(p.splitData[0].newDAO)] += paidOutToBeMoved;
-        if (DAOpaidOut[address(this)] < paidOutToBeMoved)
+        DACpaidOut[address(p.splitData[0].newDAC)] += paidOutToBeMoved;
+        if (DACpaidOut[address(this)] < paidOutToBeMoved)
             throw;
-        DAOpaidOut[address(this)] -= paidOutToBeMoved;
+        DACpaidOut[address(this)] -= paidOutToBeMoved;
 
-        // Burn DAO Tokens
+        // Burn DAC Tokens
         Transfer(msg.sender, 0, balances[msg.sender]);
         withdrawRewardFor(msg.sender); // be nice, and get his rewards
         totalSupply -= balances[msg.sender];
@@ -700,33 +702,33 @@ contract DAO is DAOInterface, Token, TokenCreation {
         //move all reward tokens
         rewardToken[_newContract] += rewardToken[address(this)];
         rewardToken[address(this)] = 0;
-        DAOpaidOut[_newContract] += DAOpaidOut[address(this)];
-        DAOpaidOut[address(this)] = 0;
+        DACpaidOut[_newContract] += DACpaidOut[address(this)];
+        DACpaidOut[address(this)] = 0;
     }
 
 
-    function retrieveDAOReward(bool _toMembers) external noEther returns (bool _success) {
-        DAO dao = DAO(msg.sender);
+    function retrieveDACReward(bool _toMembers) external noEther returns (bool _success) {
+        DAC dac = DAC(msg.sender);
 
-        if ((rewardToken[msg.sender] * DAOrewardAccount.accumulatedInput()) /
-            totalRewardToken < DAOpaidOut[msg.sender])
+        if ((rewardToken[msg.sender] * DACrewardAccount.accumulatedInput()) /
+            totalRewardToken < DACpaidOut[msg.sender])
             throw;
 
         uint reward =
-            (rewardToken[msg.sender] * DAOrewardAccount.accumulatedInput()) /
-            totalRewardToken - DAOpaidOut[msg.sender];
+            (rewardToken[msg.sender] * DACrewardAccount.accumulatedInput()) /
+            totalRewardToken - DACpaidOut[msg.sender];
 
-        reward = DAOrewardAccount.balance < reward ? DAOrewardAccount.balance : reward;
+        reward = DACrewardAccount.balance < reward ? DACrewardAccount.balance : reward;
 
         if(_toMembers) {
-            if (!DAOrewardAccount.payOut(dao.rewardAccount(), reward))
+            if (!DACrewardAccount.payOut(dac.rewardAccount(), reward))
                 throw;
             }
         else {
-            if (!DAOrewardAccount.payOut(dao, reward))
+            if (!DACrewardAccount.payOut(dac, reward))
                 throw;
         }
-        DAOpaidOut[msg.sender] += reward;
+        DACpaidOut[msg.sender] += reward;
         return true;
     }
 
@@ -841,7 +843,7 @@ contract DAO is DAOInterface, Token, TokenCreation {
         if (allowedRecipients[_recipient]
             || (_recipient == address(extraBalance)
                 // only allowed when at least the amount held in the
-                // extraBalance account has been spent from the DAO
+                // extraBalance account has been spent from TESLA-DAC®
                 && totalRewardToken > extraBalance.accumulatedInput()))
             return true;
         else
@@ -876,9 +878,9 @@ contract DAO is DAOInterface, Token, TokenCreation {
         }
     }
 
-    function createNewDAO(address _newCurator) internal returns (DAO _newDAO) {
+    function createNewDAC(address _newCurator) internal returns (DAC _newDAC) {
         NewCurator(_newCurator);
-        return daoCreator.createDAO(
+        return dacCreator.createDAC(
             _newCurator,
             0,
             0,
@@ -894,8 +896,8 @@ contract DAO is DAOInterface, Token, TokenCreation {
         return proposals.length - 1;
     }
 
-    function getNewDAOAddress(uint _proposalID) constant returns (address _newDAO) {
-        return proposals[_proposalID].splitData[0].newDAO;
+    function getNewDACAddress(uint _proposalID) constant returns (address _newDAC) {
+        return proposals[_proposalID].splitData[0].newDAC;
     }
 
     function isBlocked(address _account) internal returns (bool) {
@@ -915,8 +917,8 @@ contract DAO is DAOInterface, Token, TokenCreation {
     }
 }
 
-contract DAO_Creator {
-    function createDAO(
+contract DAC_Creator {
+    function createDAC(
         address _curator,
         uint _proposalDeposit,
         uint _minTokensToCreate,
@@ -924,11 +926,11 @@ contract DAO_Creator {
         string _tokenName, 
         string _tokenSymbol,
         uint8 _decimalPlaces
-    ) returns (DAO _newDAO) {
+    ) returns (DAC _newDAC) {
 
-        return new DAO(
+        return new DAC(
             _curator,
-            DAO_Creator(this),
+            DAC_Creator(this),
             _proposalDeposit,
             _minTokensToCreate,
             _closingTime,
