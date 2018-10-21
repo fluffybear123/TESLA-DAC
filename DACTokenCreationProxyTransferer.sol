@@ -1,18 +1,18 @@
 /*
-This file is part of the DAO.
+This file is part of TESLA-DAC®.
 
-The DAO is free software: you can redistribute it and/or modify
+TESLA-DAC® is free software: you can redistribute it and/or modify
 it under the terms of the GNU lesser General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-The DAO is distributed in the hope that it will be useful,
+TESLA-DAC®is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU lesser General Public License for more details.
 
 You should have received a copy of the GNU lesser General Public License
-along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
+along with TESLA-DAC®.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
@@ -30,14 +30,14 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
 
 import "./TokenCreation.sol";
 
-contract DAOTokenCreationProxyTransferer {
+contract DACTokenCreationProxyTransferer {
     address public owner;
-    address public dao;
+    address public dac;
 
     //constructor
-    function DAOTokenCreationProxyTransferer(address _owner, address _dao) {
+    function DACTokenCreationProxyTransferer(address _owner, address _dac) {
         owner = _owner;
-        dao = _dao;
+        dac = _dac;
 
         // just in case somebody already added values to this address,
         // we will forward it right now.
@@ -53,7 +53,7 @@ contract DAOTokenCreationProxyTransferer {
         if (this.balance == 0)
             return;
 
-        TokenCreationInterface fueling = TokenCreationInterface(dao);
+        TokenCreationInterface fueling = TokenCreationInterface(dac);
         if (now > fueling.closingTime() ||
             !fueling.createTokenProxy.value(this.balance)(owner)) {
 
